@@ -9,6 +9,8 @@
 import Foundation
 import UIKit
 import LKAlertController
+import UberRides
+import CoreLocation
 
 class ChatItem: NSObject {
   var writing = false
@@ -139,6 +141,7 @@ class MainViewController: UIViewController, UICollectionViewDataSource, UICollec
   }
 
   func entryViewSelectedAnswer(index: Int, value: String) {
+    self.openUber()
     self.entryView.updateOptions([], alternativeEntry: nil)
     self.addMessage(value, showTyping: false, ownItem: true)
     self.nextStep()
@@ -169,5 +172,37 @@ extension MainViewController {
         }
       }).show()
     }
+  }
+}
+
+
+// Uber
+extension MainViewController: RideRequestViewControllerDelegate {
+  private func openUber() {
+    let loginManager = LoginManager(accessTokenIdentifier: "Heidi")
+    if let token = TokenManager.fetchToken() {
+      self.uberAuthenticated(token.tokenString!)
+    } else {
+      loginManager.login(requestedScopes:[.RideWidgets], presentingViewController: self, completion: { accessToken, error in
+        if (accessToken == nil) {
+          return
+        }
+        TokenManager.saveToken(accessToken!)
+        self.uberAuthenticated(accessToken!.tokenString!)
+      })
+    }
+  }
+
+  private func uberAuthenticated(token: String) {
+    let loginManager = LoginManager(accessTokenIdentifier: "Heidi")
+    let parameters = RideParametersBuilder().setPickupLocation(CLLocation(latitude: 47, longitude: 8)).build()
+    let rideRequestViewController = RideRequestViewController(rideParameters: parameters, loginManager: loginManager)
+    rideRequestViewController.delegate = self
+    self.navigationController?.pushViewController(rideRequestViewController, animated: true)
+  }
+
+  func rideRequestViewController(rideRequestViewController: RideRequestViewController, didReceiveError error: NSError) {
+    let errorType = RideRequestViewErrorType(rawValue: error.code) ?? .Unknown
+    print(error)
   }
 }

@@ -20,7 +20,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     let keys = HeidiKeys()
     Configuration.setSandboxEnabled(true)
-    Configuration.setClientID(keys.uberClientID)
+    Configuration.setClientID(keys.uberClientID())
+    Configuration.setCallbackURIString("heidi://test")
 
 
     self.window = UIWindow(frame: UIScreen.mainScreen().bounds)

@@ -8,6 +8,7 @@
 
 import UIKit
 import UberRides
+import Keys
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -17,7 +18,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
   func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
 
+    let keys = HeidiKeys()
     Configuration.setSandboxEnabled(true)
+    Configuration.setClientID(keys.uberClientID)
+
 
     self.window = UIWindow(frame: UIScreen.mainScreen().bounds)
     self.window?.backgroundColor = UIColor.whiteColor()

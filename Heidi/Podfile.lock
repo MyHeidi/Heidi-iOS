@@ -1,5 +1,6 @@
 PODS:
   - Alamofire (3.4.0)
+  - Keys (1.0.0)
   - LKAlertController (1.9.1)
   - ObjectMapper (1.1.5)
   - UberRides (0.4.2):
@@ -7,11 +8,17 @@ PODS:
 
 DEPENDENCIES:
   - Alamofire (~> 3.4)
+  - Keys (from `Pods/CocoaPodsKeys`)
   - LKAlertController (~> 1.6)
   - UberRides
 
+EXTERNAL SOURCES:
+  Keys:
+    :path: Pods/CocoaPodsKeys
+
 SPEC CHECKSUMS:
   Alamofire: c19a627cefd6a95f840401c49ab1f124e07f54ee
+  Keys: 7d2ff6ff42f6903358267ce56e9392f83c31acfe
   LKAlertController: 1e85a645e0bd3223a8f79abb9b7b54fe10036f6f
   ObjectMapper: 528b1a6677a6acac7747edd508576983e76a9148
   UberRides: fa21246486f1c20b88392036501481f86e81a022

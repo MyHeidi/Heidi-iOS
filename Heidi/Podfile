@@ -1,0 +1,10 @@
+use_frameworks!
+
+target 'Heidi' do
+
+pod 'Alamofire', '~> 3.4'
+pod 'LKAlertController', '~> 1.6'
+pod 'UberRides'
+
+end
+

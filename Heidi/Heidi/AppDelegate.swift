@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import UberRides
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -15,6 +16,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 
   func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
+
+    Configuration.setSandboxEnabled(true)
 
     self.window = UIWindow(frame: UIScreen.mainScreen().bounds)
     self.window?.backgroundColor = UIColor.whiteColor()

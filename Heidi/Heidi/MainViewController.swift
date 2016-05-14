@@ -8,6 +8,7 @@
 
 import Foundation
 import UIKit
+import LKAlertController
 
 class ChatItem: NSObject {
   var writing = false
@@ -141,5 +142,32 @@ class MainViewController: UIViewController, UICollectionViewDataSource, UICollec
     self.entryView.updateOptions([], alternativeEntry: nil)
     self.addMessage(value, showTyping: false, ownItem: true)
     self.nextStep()
+  }
+}
+
+// shake gesture
+extension MainViewController {
+  override func viewDidAppear(animated: Bool) {
+    super.viewDidAppear(animated)
+    self.becomeFirstResponder()
+  }
+
+  override func canBecomeFirstResponder() -> Bool {
+    return true
+  }
+
+  override func motionEnded(motion: UIEventSubtype, withEvent event: UIEvent!) {
+    if (event.subtype == UIEventSubtype.MotionShake) {
+      Alert(title: "Reset?").addAction("Cancel").addAction("Yes", style: .Default, preferredAction: true, handler: { (action: UIAlertAction!) in
+        NSUserDefaults.standardUserDefaults().setInteger(0, forKey: "demoStep")
+        self.currentStep = 0
+        self.entryView.updateOptions([], alternativeEntry: nil)
+        self.items.removeAll()
+        self.collectionView.reloadData()
+        self.delay(0.1) {
+          self.nextStep()
+        }
+      }).show()
+    }
   }
 }

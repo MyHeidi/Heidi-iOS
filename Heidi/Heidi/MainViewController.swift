@@ -257,16 +257,6 @@ extension MainViewController: RideRequestViewControllerDelegate {
 
 // Data loading
 extension MainViewController {
-  private func loadAction() {
-    Alamofire.request(.POST, "http://dev.heidi.wx.rs/update_location", parameters: ["lat":"51.153662", "lng":"-0.182063"]).responseJSON { (response: Response<AnyObject, NSError>) in
-      if let action = response.result.value!["action"] {
-        if (action! as! String == "notification") {
-          print("send local notification")
-        }
-      }
-    }
-  }
-
   private func loadNextQuestion() {
     Alamofire.request(.POST, "http://dev.heidi.wx.rs/get_question", parameters: ["lat":"51.153662", "lng":"-0.182063", "prev_answers":"[]"]).responseJSON { (response: Response<AnyObject, NSError>) in
       print(response.result.value!)

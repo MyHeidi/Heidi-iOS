@@ -49,5 +49,22 @@
 	<array>
 		<string>uber</string>
 	</array>
+  <key>NSAppTransportSecurity</key>
+  <dict>
+    <key>NSExceptionDomains</key>
+    <dict>
+      <key>wx.rs</key>
+      <dict>
+        <key>NSExceptionRequiresForwardSecrecy</key>
+        <false/>
+        <key>NSTemporaryExceptionAllowsInsecureHTTPLoads</key>
+        <true/>
+        <key>NSIncludesSubdomains</key>
+        <true/>
+        <key>NSTemporaryExceptionMinimumTLSVersion</key>
+        <string>TLSv1.0</string>
+      </dict>
+    </dict>
+  </dict>
 </dict>
 </plist>

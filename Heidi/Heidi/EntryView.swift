@@ -73,7 +73,8 @@ class EntryView: UIView {
 
     var totalWidth = CGFloat(0)
     for item in self.itemViews {
-      totalWidth += item.sizeThatFits(CGSizeZero).width
+      let s = item.sizeThatFits(CGSizeZero).width
+      totalWidth += s
     }
 
     let spacing = (space - totalWidth) / CGFloat(self.itemViews.count + 1)

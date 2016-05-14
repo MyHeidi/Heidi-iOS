@@ -11,6 +11,7 @@ import UIKit
 import LKAlertController
 import UberRides
 import CoreLocation
+import Alamofire
 
 class ChatItem: NSObject {
   var writing = false
@@ -29,10 +30,14 @@ class MainViewController: UIViewController, UICollectionViewDataSource, UICollec
   private var items = [ChatItem]()
   private var currentTypingItem: StringChatItem?
   private var currentStep = 0
+  private var nextAnswers = [Answer]()
+  private var finished = false
 
   override func viewDidLoad() {
     super.viewDidLoad()
     self.title = "Heidi"
+
+    self.loadNextQuestion()
 
     let entryHeight = CGFloat(64)
 
@@ -56,23 +61,20 @@ class MainViewController: UIViewController, UICollectionViewDataSource, UICollec
     self.entryView.delegate = self
     self.view.addSubview(self.entryView)
 
-    self.delay(1) {
-      self.nextStep()
+
+    NSNotificationCenter.defaultCenter().addObserverForName(UIApplicationDidEnterBackgroundNotification, object: nil, queue: NSOperationQueue.mainQueue()) { (notification: NSNotification) in
+      if (self.finished) {
+        let ud = NSUserDefaults.standardUserDefaults()
+        ud.setInteger(ud.integerForKey("demoStep") + 1, forKey: "demoStep")
+        self.currentStep = 0
+        self.entryView.updateOptions([], alternativeEntry: nil)
+        self.items.removeAll()
+        self.collectionView.reloadData()
+
+        self.loadNextQuestion()
+      }
+      self.finished = false
     }
-  }
-
-  private func nextStep() {
-    if (self.currentStep == 0) {
-      self.addMessage("Hello! My name is Heidi.\nI can help you find the perfect place to have a meal, drinks or to party.", showTyping: true)
-    } else if (self.currentStep == 1) {
-      self.addMessage("What are you looking for?", showTyping: true)
-    } else if (self.currentStep == 2) {
-      self.entryView.updateOptions(["🍔 Food", "🍻 Drinks", "🎉 Party"], alternativeEntry: nil)
-    } else if (self.currentStep == 3) {
-
-    }
-
-    self.currentStep += 1
   }
 
   func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
@@ -106,7 +108,8 @@ class MainViewController: UIViewController, UICollectionViewDataSource, UICollec
     }
   }
 
-  private func addMessage(message: String, showTyping: Bool, ownItem: Bool = false) {
+  typealias AddMessageCompletion = () -> ()
+  private func addMessage(message: String, showTyping: Bool, ownItem: Bool = false, completion: AddMessageCompletion? = nil) {
     let item = StringChatItem()
     item.value = message
     item.writing = showTyping
@@ -116,24 +119,32 @@ class MainViewController: UIViewController, UICollectionViewDataSource, UICollec
     self.collectionView.insertItemsAtIndexPaths([indexPath])
     self.currentTypingItem = item
 
+    self.currentStep += 1
+
     if (showTyping) {
       self.delay(1.6) {
-        self.disableTyping(indexPath)
+        self.disableTyping(indexPath, completion: completion)
       }
     } else {
       self.delay(0.2) {
-        self.nextStep()
+        self.showAnswers()
+        completion?()
       }
     }
   }
 
-  func disableTyping(indexPath: NSIndexPath) {
+  func disableTyping(indexPath: NSIndexPath, completion: AddMessageCompletion?) {
     self.currentTypingItem!.writing = false
     let cell = self.collectionView.cellForItemAtIndexPath(indexPath) as! ChatCell
     cell.reloadData()
     self.delay(0.2) {
-      self.nextStep()
+      self.showAnswers()
+      completion?()
     }
+  }
+
+  private func showAnswers() {
+    self.entryView.updateOptions(self.nextAnswers.map{$0.answer}, alternativeEntry: nil)
   }
 
   func entryViewEnteredText(text: String) {
@@ -141,10 +152,46 @@ class MainViewController: UIViewController, UICollectionViewDataSource, UICollec
   }
 
   func entryViewSelectedAnswer(index: Int, value: String) {
-    self.openUber()
+    let a = self.nextAnswers[index]
+    if (a.action == "route") {
+      self.nextAnswers.removeAll()
+      self.entryView.updateOptions([], alternativeEntry: nil)
+      self.addMessage(value, showTyping: false, ownItem: true) {
+        self.nextAnswers = [Answer(answer: "🚗 Uber", "uber"), Answer(answer: "🗺 Navigate", "nav"), Answer(answer: "🚎 Bus", "bus")]
+        for l in self.nextAnswers {
+          l.location = a.location
+        }
+        self.addMessage("How do you want to get there?", showTyping: true)
+      }
+    } else if (a.action == "uber") {
+      self.addMessage(value, showTyping: false, ownItem: true, completion: { 
+        self.openUber(a.location!)
+        let na = Answer(answer: "✅ Done", "done")
+        self.nextAnswers = [na]
+        self.showAnswers()
+      })
+    } else if (a.action == "nav") {
+      self.addMessage(value, showTyping: false, ownItem: true, completion: {
+        UIApplication.sharedApplication().openURL(NSURL(string: "comgooglemaps://?center=\(a.location!.latitude),\(a.location!.longitude)&zoom=14")!)
+        let na = Answer(answer: "✅ Done", "done")
+        self.nextAnswers = [na]
+        self.showAnswers()
+      })
+    } else if (a.action == "done") {
+      self.showEndMessage()
+    }
+
+//    self.openUber()
+//    self.entryView.updateOptions([], alternativeEntry: nil)
+//    self.addMessage(value, showTyping: false, ownItem: true)
+//    self.loadNextQuestion()
+  }
+
+  private func showEndMessage() {
+    self.addMessage("See you again soon! 🇨🇭", showTyping: false)
+    self.nextAnswers.removeAll()
     self.entryView.updateOptions([], alternativeEntry: nil)
-    self.addMessage(value, showTyping: false, ownItem: true)
-    self.nextStep()
+    self.finished = true
   }
 }
 
@@ -168,7 +215,7 @@ extension MainViewController {
         self.items.removeAll()
         self.collectionView.reloadData()
         self.delay(0.1) {
-          self.nextStep()
+          self.loadNextQuestion()
         }
       }).show()
     }
@@ -178,24 +225,24 @@ extension MainViewController {
 
 // Uber
 extension MainViewController: RideRequestViewControllerDelegate {
-  private func openUber() {
+  private func openUber(location: CLLocationCoordinate2D) {
     let loginManager = LoginManager(accessTokenIdentifier: "Heidi")
     if let token = TokenManager.fetchToken() {
-      self.uberAuthenticated(token.tokenString!)
+      self.uberAuthenticated(token.tokenString!, location: location)
     } else {
       loginManager.login(requestedScopes:[.RideWidgets], presentingViewController: self, completion: { accessToken, error in
         if (accessToken == nil) {
           return
         }
         TokenManager.saveToken(accessToken!)
-        self.uberAuthenticated(accessToken!.tokenString!)
+        self.uberAuthenticated(accessToken!.tokenString!, location: location)
       })
     }
   }
 
-  private func uberAuthenticated(token: String) {
+  private func uberAuthenticated(token: String, location: CLLocationCoordinate2D) {
     let loginManager = LoginManager(accessTokenIdentifier: "Heidi")
-    let parameters = RideParametersBuilder().setPickupLocation(CLLocation(latitude: 47, longitude: 8)).build()
+    let parameters = RideParametersBuilder().setPickupLocation(CLLocation(latitude: location.latitude, longitude: location.longitude)).build()
     let rideRequestViewController = RideRequestViewController(rideParameters: parameters, loginManager: loginManager)
     rideRequestViewController.delegate = self
     self.navigationController?.pushViewController(rideRequestViewController, animated: true)
@@ -206,3 +253,38 @@ extension MainViewController: RideRequestViewControllerDelegate {
     print(error)
   }
 }
+
+
+// Data loading
+extension MainViewController {
+  private func loadAction() {
+    Alamofire.request(.POST, "http://dev.heidi.wx.rs/update_location", parameters: ["lat":"51.153662", "lng":"-0.182063"]).responseJSON { (response: Response<AnyObject, NSError>) in
+      if let action = response.result.value!["action"] {
+        if (action! as! String == "notification") {
+          print("send local notification")
+        }
+      }
+    }
+  }
+
+  private func loadNextQuestion() {
+    Alamofire.request(.POST, "http://dev.heidi.wx.rs/get_question", parameters: ["lat":"51.153662", "lng":"-0.182063", "prev_answers":"[]"]).responseJSON { (response: Response<AnyObject, NSError>) in
+      print(response.result.value!)
+      let answers = response.result.value!["answers"] as! Array<Dictionary<String, AnyObject>>
+      self.nextAnswers.removeAll()
+      for a in answers {
+        let newAnswer = Answer()
+        newAnswer.id = a["id"] as! String
+        newAnswer.action = a["action"] as! String
+        newAnswer.answer = a["answer"] as! String
+        if let loc = a["location"] {
+          let d = loc as! Dictionary<String,AnyObject>
+          newAnswer.location = CLLocationCoordinate2D(latitude: d["lat"]! as! Double, longitude: d["lng"]! as! Double)
+        }
+        self.nextAnswers.append(newAnswer)
+      }
+      self.addMessage(response.result.value!["question"] as! String, showTyping: true)
+    }
+  }
+}
+

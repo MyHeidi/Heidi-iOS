@@ -17,6 +17,8 @@ class EntryItemView: UIView {
   init(frame: CGRect, title: String) {
     super.init(frame: frame)
 
+    self.clipsToBounds = true
+
     self.bg.backgroundColor = UIColor(red:0.200,  green:0.651,  blue:0.992, alpha:1)
     self.addSubview(self.bg)
 
@@ -32,6 +34,7 @@ class EntryItemView: UIView {
   }
 
   override func sizeThatFits(size: CGSize) -> CGSize {
+    self.layoutSubviews()
     return self.bg.frame.size
   }
 

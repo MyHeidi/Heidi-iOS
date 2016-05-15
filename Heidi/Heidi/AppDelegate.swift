@@ -100,6 +100,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
       }
     } else if (k == "photo") {
       NSUserDefaults.standardUserDefaults().setBool(true, forKey: "simPhoto")
+      UIApplication.sharedApplication().endBackgroundTask(taskId)
+      completionHandler(.NewData)
     }
   }
 }

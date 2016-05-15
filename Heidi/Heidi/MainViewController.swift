@@ -34,6 +34,7 @@ class VenuesChatItem: ChatItem {
 
 class MainViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, SizeDelegate, EntryViewDelegate {
 
+  let entryHeight = CGFloat(64)
   private var collectionView: UICollectionView!
   private var entryView: EntryView!
   private var sizingCell: ChatCell!
@@ -49,8 +50,6 @@ class MainViewController: UIViewController, UICollectionViewDataSource, UICollec
   override func viewDidLoad() {
     super.viewDidLoad()
     self.title = "Heidi"
-
-    let entryHeight = CGFloat(64)
 
     let layout = UICollectionViewFlowLayout()
     layout.minimumInteritemSpacing = 20
@@ -75,7 +74,7 @@ class MainViewController: UIViewController, UICollectionViewDataSource, UICollec
     self.view.addSubview(self.entryView)
 
 
-    NSNotificationCenter.defaultCenter().addObserverForName(UIApplicationDidEnterBackgroundNotification, object: nil, queue: NSOperationQueue.mainQueue()) { (notification: NSNotification) in
+    NSNotificationCenter.defaultCenter().addObserverForName(UIApplicationDidBecomeActiveNotification, object: nil, queue: NSOperationQueue.mainQueue()) { (notification: NSNotification) in
       if (self.finished) {
         self.currentStep = 0
         self.entryView.updateOptions([], alternativeEntry: nil)
@@ -83,14 +82,23 @@ class MainViewController: UIViewController, UICollectionViewDataSource, UICollec
         self.collectionView.reloadData()
         self.history.removeAll()
 
-        self.loadNextQuestion()
+        self.delay(0.2) {
+          //NSUserDefaults.standardUserDefaults().setBool(true, forKey: "simPhoto")
+          self.loadNextQuestion()
+        }
       }
       self.finished = true
     }
 
+    NSNotificationCenter.defaultCenter().addObserverForName(UIKeyboardWillShowNotification, object: nil, queue: NSOperationQueue.mainQueue()) { (notification: NSNotification) in
+      self.keyboardWillShowOrHide(notification)
+    }
+    NSNotificationCenter.defaultCenter().addObserverForName(UIKeyboardWillHideNotification, object: nil, queue: NSOperationQueue.mainQueue()) { (notification: NSNotification) in
+      self.keyboardWillShowOrHide(notification)
+    }
+
 
     self.delay(0.1) {
-      NSUserDefaults.standardUserDefaults().setBool(true, forKey: "simPhoto")
       self.loadNextQuestion()
     }
   }
@@ -188,7 +196,9 @@ class MainViewController: UIViewController, UICollectionViewDataSource, UICollec
   }
 
   func entryViewEnteredText(text: String) {
-
+    self.addMessage(text, showTyping: false, ownItem: true) { 
+      self.sendCustomQuestion(text)
+    }
   }
 
   func entryViewSelectedAnswer(index: Int, value: String) {
@@ -278,11 +288,6 @@ class MainViewController: UIViewController, UICollectionViewDataSource, UICollec
         self.showEndMessage()
       }
     }
-
-//    self.openUber()
-//    self.entryView.updateOptions([], alternativeEntry: nil)
-//    self.addMessage(value, showTyping: false, ownItem: true)
-//    self.loadNextQuestion()
   }
 
   private func showEndMessage() {
@@ -307,7 +312,6 @@ extension MainViewController {
   override func motionEnded(motion: UIEventSubtype, withEvent event: UIEvent!) {
     if (event.subtype == UIEventSubtype.MotionShake) {
       Alert(title: "Reset?").addAction("Cancel").addAction("Yes", style: .Default, preferredAction: true, handler: { (action: UIAlertAction!) in
-        NSUserDefaults.standardUserDefaults().setBool(false, forKey: "fleShown")
         self.currentStep = 0
         self.entryView.updateOptions([], alternativeEntry: nil)
         self.items.removeAll()
@@ -423,7 +427,7 @@ extension MainViewController {
       multipartFormData in
       if let _image = photo {
         if let imageData = UIImagePNGRepresentation(_image) {
-          multipartFormData.appendBodyPart(data: imageData, name: "photo", fileName: "test.png", mimeType: "image/png")
+          multipartFormData.appendBodyPart(data: imageData, name: "photo", fileName: NSUUID().UUIDString + ".png", mimeType: "image/png")
         }
       }
       for (key, value) in userInfo {
@@ -464,6 +468,21 @@ extension MainViewController {
     self.addMessage(value["question"] as! String, showTyping: true)
     self.lastQuestion = value["id"] as! String
   }
+
+  private func sendCustomQuestion(q: String) {
+    let lat = "51.5226651"
+    let lng = "-0.0878222"
+
+    Alamofire.request(.POST, "http://dev.heidi.wx.rs/ask_question", parameters: ["lat":lat, "lng":lng, "question":q]).responseJSON { (response: Response<AnyObject, NSError>) in
+      if (response.result.value == nil) {
+        Alert(title: "Error", message: "Didn't get a valid response from the server.").showOkay()
+        return
+      }
+      if let answer = response.result.value!["answer"] as? String {
+        self.addMessage(answer, showTyping: true)
+      }
+    }
+  }
 }
 
 
@@ -478,3 +497,20 @@ extension MainViewController: VenuePickerCellDelegate {
   }
 }
 
+
+// Keyboard handling
+extension MainViewController {
+  func keyboardWillShowOrHide(notification: NSNotification) {
+    let userInfo = notification.userInfo!
+    let duration = userInfo[UIKeyboardAnimationDurationUserInfoKey] as! Double
+    var keyboardFrameEnd = userInfo[UIKeyboardFrameEndUserInfoKey]!.CGRectValue()
+    keyboardFrameEnd = self.view.convertRect(keyboardFrameEnd, toView: nil)
+    let options = UIViewAnimationOptions(rawValue: UInt((userInfo[UIKeyboardAnimationCurveUserInfoKey] as! NSNumber).integerValue << 16))
+    UIView.animateWithDuration(duration, delay: 0, options: options, animations: {
+      self.entryView.frame.origin.y = keyboardFrameEnd.origin.y - self.entryHeight
+      self.collectionView.frame.size.height = keyboardFrameEnd.origin.y - self.entryHeight
+    }) { (finished: Bool) in
+
+    }
+  }
+}

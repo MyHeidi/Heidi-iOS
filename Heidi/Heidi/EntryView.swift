@@ -14,12 +14,13 @@ protocol EntryViewDelegate: class {
   func entryViewEnteredText(text: String)
 }
 
-class EntryView: UIView {
+class EntryView: UIView, UITextFieldDelegate {
 
   weak var delegate: EntryViewDelegate?
   private var itemViews = [EntryItemView]()
   private var options = [String]()
-  private var keyboardButton = UIButton(type: .Custom)
+  private let keyboardButton = UIButton(type: .Custom)
+  private let inputField = UITextField()
 
   override init(frame: CGRect) {
     super.init(frame: frame)
@@ -31,7 +32,15 @@ class EntryView: UIView {
     self.keyboardButton.frame = CGRect(x: self.frame.width - 55, y: 0, width: 48, height: 64)
     self.keyboardButton.setImage(UIImage(named: "keyboard")!.imageWithRenderingMode(.AlwaysTemplate), forState: .Normal)
     self.keyboardButton.tintColor = UIColor(white: 0.5, alpha: 1.0)
+    self.keyboardButton.addTarget(self, action: Selector("showKeyboard"), forControlEvents: .TouchUpInside)
     self.addSubview(self.keyboardButton)
+
+    self.inputField.frame = CGRect(x: 10, y: 10, width: self.frame.width - 20, height: 44)
+    self.inputField.placeholder = "Ask me a question..."
+    self.inputField.hidden = true
+    self.inputField.returnKeyType = .Done
+    self.inputField.delegate = self
+    self.addSubview(self.inputField)
   }
 
   required init?(coder aDecoder: NSCoder) {
@@ -89,5 +98,30 @@ class EntryView: UIView {
   func tappedOnItem(gesture: UITapGestureRecognizer) {
     let index = gesture.view!.tag
     self.delegate?.entryViewSelectedAnswer(index, value: self.options[index])
+  }
+
+  func showKeyboard() {
+    self.keyboardButton.hidden = true
+    self.inputField.hidden = false
+    self.inputField.becomeFirstResponder()
+    for i in self.itemViews {
+      i.hidden = true
+    }
+  }
+
+  func hideKeyboard() {
+    self.keyboardButton.hidden = false
+    self.inputField.resignFirstResponder()
+    self.inputField.hidden = true
+    for i in self.itemViews {
+      i.hidden = false
+    }
+  }
+
+  func textFieldShouldReturn(textField: UITextField) -> Bool {
+    self.hideKeyboard()
+    self.delegate?.entryViewEnteredText(textField.text ?? "")
+    textField.text = ""
+    return false
   }
 }

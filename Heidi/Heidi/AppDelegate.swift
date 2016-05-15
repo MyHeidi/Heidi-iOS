@@ -10,6 +10,7 @@ import UIKit
 import UberRides
 import Keys
 import Alamofire
+import Photos
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -29,17 +30,39 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     self.window?.backgroundColor = UIColor.whiteColor()
     self.window?.makeKeyAndVisible()
 
-    let vc = MainViewController()
-    let nv = DefaultNavigationController(rootViewController: vc)
-    self.window?.rootViewController = nv
+    if (NSUserDefaults.standardUserDefaults().boolForKey("fleShown")) {
+      self.showMainApp()
+    } else {
+      self.window?.rootViewController = FLEViewController()
+    }
 
 
+    if (PHPhotoLibrary.authorizationStatus() == .Authorized) {
+      self.registerPush()
+    } else {
+      PHPhotoLibrary.requestAuthorization { (status: PHAuthorizationStatus) -> Void in
+        dispatch_async(dispatch_get_main_queue(),{
+          if (status == .Authorized) {
+            self.registerPush()
+          }
+        })
+      }
+
+    }
+
+    return true
+  }
+
+  private func registerPush() {
     let settings = UIUserNotificationSettings(forTypes: [.Alert, .Badge, .Sound], categories: nil)
     UIApplication.sharedApplication().registerUserNotificationSettings(settings)
     UIApplication.sharedApplication().registerForRemoteNotifications()
+  }
 
-
-    return true
+  func showMainApp() {
+    let vc = MainViewController()
+    let nv = DefaultNavigationController(rootViewController: vc)
+    self.window?.rootViewController = nv
   }
 
   func application(application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: NSData) {
@@ -62,6 +85,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
       Alamofire.request(.POST, "http://dev.heidi.wx.rs/update_location", parameters: ["lat":"51.153662", "lng":"-0.182063"]).responseJSON { (response: Response<AnyObject, NSError>) in
         if let action = response.result.value!["action"] {
           if (action! as! String == "notification") {
+            NSUserDefaults.standardUserDefaults().setBool(true, forKey: "simAirport")
             let notification = UILocalNotification()
             notification.fireDate = NSDate(timeIntervalSinceNow: 1)
             notification.alertBody = response.result.value!["message"]! as? String
@@ -75,7 +99,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         completionHandler(.NewData)
       }
     } else if (k == "photo") {
-      
+      NSUserDefaults.standardUserDefaults().setBool(true, forKey: "simPhoto")
     }
   }
 }

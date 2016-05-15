@@ -48,6 +48,10 @@ class Answer {
         _answer = "10 min"
       case "leisure_restaurants_distance_30":
         _answer = "30 min"
+      case "photo_share_photo_yes":
+        _answer = "👍 Share photo"
+      case "photo_share_photo_no":
+        _answer = "🙈 Don‘t share"
       default:
         assert(false, "unknown type: \(newValue)")
         _answer = ""

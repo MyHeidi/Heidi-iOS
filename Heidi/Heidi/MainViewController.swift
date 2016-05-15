@@ -13,6 +13,7 @@ import UberRides
 import CoreLocation
 import Alamofire
 import SafariServices
+import Photos
 
 class ChatItem: NSObject {
   var writing = false
@@ -21,6 +22,10 @@ class ChatItem: NSObject {
 
 class StringChatItem: ChatItem {
   var value = ""
+}
+
+class PhotoChatItem: ChatItem {
+  var image: UIImage!
 }
 
 class VenuesChatItem: ChatItem {
@@ -32,20 +37,18 @@ class MainViewController: UIViewController, UICollectionViewDataSource, UICollec
   private var collectionView: UICollectionView!
   private var entryView: EntryView!
   private var sizingCell: ChatCell!
+  private var photoSizingCell: PhotoChatCell!
   private var items = [ChatItem]()
   private var currentTypingItem: StringChatItem?
   private var currentStep = 0
-  private var demoStep = 1
   private var nextAnswers = [Answer]()
-  private var finished = false
+  private var finished = true
   private var history = [[String:String]]()
   private var lastQuestion = ""
 
   override func viewDidLoad() {
     super.viewDidLoad()
     self.title = "Heidi"
-
-    self.loadNextQuestion()
 
     let entryHeight = CGFloat(64)
 
@@ -55,6 +58,7 @@ class MainViewController: UIViewController, UICollectionViewDataSource, UICollec
     self.collectionView = UICollectionView(frame: CGRectMake(0, 0, self.view.frame.width, self.view.frame.height - entryHeight), collectionViewLayout: layout)
     self.collectionView!.registerClass(ChatCell.self, forCellWithReuseIdentifier: "chatCell")
     self.collectionView!.registerClass(VenuePickerCell.self, forCellWithReuseIdentifier: "venuePickerCell")
+    self.collectionView!.registerClass(PhotoChatCell.self, forCellWithReuseIdentifier: "photoChatCell")
     self.collectionView.contentInset = UIEdgeInsetsMake(20, 0, 10, 0)
     self.collectionView.scrollIndicatorInsets = UIEdgeInsetsMake(20, 0, 10, 0)
     self.collectionView.dataSource = self
@@ -64,7 +68,7 @@ class MainViewController: UIViewController, UICollectionViewDataSource, UICollec
     self.view.addSubview(self.collectionView)
 
     self.sizingCell = ChatCell(frame: CGRectMake(0, 0, self.view.frame.width, 0))
-
+    self.photoSizingCell = PhotoChatCell(frame: CGRectMake(0, 0, self.view.frame.width, 0))
 
     self.entryView = EntryView(frame: CGRect(x: 0, y: self.view.frame.height - entryHeight, width: self.view.frame.width, height: entryHeight))
     self.entryView.delegate = self
@@ -73,7 +77,6 @@ class MainViewController: UIViewController, UICollectionViewDataSource, UICollec
 
     NSNotificationCenter.defaultCenter().addObserverForName(UIApplicationDidEnterBackgroundNotification, object: nil, queue: NSOperationQueue.mainQueue()) { (notification: NSNotification) in
       if (self.finished) {
-        self.demoStep += 1
         self.currentStep = 0
         self.entryView.updateOptions([], alternativeEntry: nil)
         self.items.removeAll()
@@ -82,7 +85,13 @@ class MainViewController: UIViewController, UICollectionViewDataSource, UICollec
 
         self.loadNextQuestion()
       }
-      self.finished = false
+      self.finished = true
+    }
+
+
+    self.delay(0.1) {
+      NSUserDefaults.standardUserDefaults().setBool(true, forKey: "simPhoto")
+      self.loadNextQuestion()
     }
   }
 
@@ -102,6 +111,11 @@ class MainViewController: UIViewController, UICollectionViewDataSource, UICollec
       cell.item = item as! VenuesChatItem
       cell.delegate = self
       return cell
+    } else if (item is PhotoChatItem) {
+      let cell = collectionView.dequeueReusableCellWithReuseIdentifier("photoChatCell", forIndexPath: indexPath) as! PhotoChatCell
+      cell.item = item as! PhotoChatItem
+      cell.sizeDelegate = self
+      return cell
     }
     return UICollectionViewCell()
   }
@@ -113,6 +127,9 @@ class MainViewController: UIViewController, UICollectionViewDataSource, UICollec
       return self.sizingCell.sizeThatFits(CGSizeMake(self.view.frame.width, 0))
     } else if (item is VenuesChatItem) {
       return CGSizeMake(self.view.frame.width, 100)
+    } else if (item is PhotoChatItem) {
+      self.photoSizingCell.item = item as! PhotoChatItem
+      return self.photoSizingCell.sizeThatFits(CGSizeMake(self.view.frame.width, 0))
     }
     return CGSizeZero
   }
@@ -175,6 +192,7 @@ class MainViewController: UIViewController, UICollectionViewDataSource, UICollec
   }
 
   func entryViewSelectedAnswer(index: Int, value: String) {
+    self.finished = false
     let a = self.nextAnswers[index]
     if (a.action == "route") {
       self.nextAnswers.removeAll()
@@ -280,7 +298,7 @@ extension MainViewController {
   override func motionEnded(motion: UIEventSubtype, withEvent event: UIEvent!) {
     if (event.subtype == UIEventSubtype.MotionShake) {
       Alert(title: "Reset?").addAction("Cancel").addAction("Yes", style: .Default, preferredAction: true, handler: { (action: UIAlertAction!) in
-        self.demoStep = 0
+        NSUserDefaults.standardUserDefaults().setBool(false, forKey: "fleShown")
         self.currentStep = 0
         self.entryView.updateOptions([], alternativeEntry: nil)
         self.items.removeAll()
@@ -333,45 +351,108 @@ extension MainViewController {
     var lat = ""
     var lng = ""
 
-    if (self.demoStep == 0) {
-      lat = "51.153662"
-      lng = "-0.182063"
-    } else if (self.demoStep == 1) {
+    let ud = NSUserDefaults.standardUserDefaults()
+    if (ud.boolForKey("simPhoto")) {
+      ud.setBool(false, forKey: "simPhoto")
       lat = "51.5226651"
       lng = "-0.0878222"
+      self.uploadPhoto(lat, lng)
+    } else if (ud.boolForKey("simAirport")) {
+      ud.setBool(false, forKey: "simAirport")
+      lat = "51.153662"
+      lng = "-0.182063"
+      self.loadQuestion(lat, lng)
+    } else {
+      lat = "51.5226651"
+      lng = "-0.0878222"
+      self.loadQuestion(lat, lng)
     }
+  }
 
-//    lat = "51.153662"
-//    lng = "-0.182063"
-
+  private func loadQuestion(lat: String, _ lng: String) {
     let historyData = try! NSJSONSerialization.dataWithJSONObject(self.history, options: NSJSONWritingOptions.PrettyPrinted)
     Alamofire.request(.POST, "http://dev.heidi.wx.rs/get_question", parameters: ["lat":lat, "lng":lng, "prev_answers":NSString(data: historyData, encoding: NSUTF8StringEncoding)!]).responseJSON { (response: Response<AnyObject, NSError>) in
       if (response.result.value == nil) {
         Alert(title: "Error", message: "Didn't get a valid response from the server.").showOkay()
         return
       }
-      print(response.result.value!)
-      let answers = response.result.value!["answers"] as! Array<Dictionary<String, AnyObject>>
-      self.nextAnswers.removeAll()
-      for a in answers {
-        let newAnswer = Answer()
-        newAnswer.id = a["id"] as! String
-        if a["action"] as? NSNull != NSNull() {
-          newAnswer.action = a["action"] as? String
-        }
-        newAnswer.answer = a["answer"] as! String
-        if let loc = a["location"] {
-          let d = loc as! Dictionary<String,AnyObject>
-          newAnswer.location = CLLocationCoordinate2D(latitude: d["lat"]! as! Double, longitude: d["lng"]! as! Double)
-        }
-        if let url = a["url"] {
-          newAnswer.url = url as? String
-        }
-        self.nextAnswers.append(newAnswer)
-      }
-      self.addMessage(response.result.value!["question"] as! String, showTyping: true)
-      self.lastQuestion = response.result.value!["id"] as! String
+      self.parseResult(response.result.value! as! [String : AnyObject])
     }
+  }
+
+  private func uploadPhoto(lat: String, _ lng: String) {
+
+    let userInfo = ["lat":lat, "lng":lng]
+    var photo: UIImage?
+
+    let imgManager = PHImageManager.defaultManager()
+    let requestOptions = PHImageRequestOptions()
+    requestOptions.synchronous = true
+    let fetchOptions = PHFetchOptions()
+    fetchOptions.sortDescriptors = [NSSortDescriptor(key:"creationDate", ascending: true)]
+
+    if let fetchResult: PHFetchResult = PHAsset.fetchAssetsWithMediaType(PHAssetMediaType.Image, options: fetchOptions) {
+      if fetchResult.count > 0 {
+        // Perform the image request
+        imgManager.requestImageForAsset(fetchResult.objectAtIndex(0) as! PHAsset, targetSize: CGSize(width: 320, height: 320), contentMode: PHImageContentMode.AspectFit, options: requestOptions, resultHandler: { (image, _) in
+          photo = image
+        })
+      }
+    }
+
+    if let _image = photo {
+      let item = PhotoChatItem()
+      item.image = _image
+      item.ownItem = true
+      self.items.append(item)
+      let indexPath = NSIndexPath(forRow: self.items.count - 1, inSection: 0)
+      self.collectionView.insertItemsAtIndexPaths([indexPath])
+    }
+
+    Alamofire.upload(.POST, "http://dev.heidi.wx.rs/upload/photo", multipartFormData: {
+      multipartFormData in
+      if let _image = photo {
+        if let imageData = UIImagePNGRepresentation(_image) {
+          multipartFormData.appendBodyPart(data: imageData, name: "photo", fileName: "test.png", mimeType: "image/png")
+        }
+      }
+      for (key, value) in userInfo {
+        multipartFormData.appendBodyPart(data: value.dataUsingEncoding(NSUTF8StringEncoding)!, name: key)
+      }
+      }, encodingCompletion: { encodingResult in
+        switch encodingResult {
+        case .Success(let upload, _, _):
+          upload.responseJSON { response in
+            self.parseResult(response.result.value! as! [String:AnyObject])
+          }
+        case .Failure(let encodingError):
+          print(encodingError)
+        }
+      }
+    )
+  }
+
+  private func parseResult(value:[String:AnyObject]) {
+    let answers = value["answers"] as! Array<Dictionary<String, AnyObject>>
+    self.nextAnswers.removeAll()
+    for a in answers {
+      let newAnswer = Answer()
+      newAnswer.id = a["id"] as! String
+      if a["action"] as? NSNull != NSNull() {
+        newAnswer.action = a["action"] as? String
+      }
+      newAnswer.answer = a["answer"] as! String
+      if let loc = a["location"] {
+        let d = loc as! Dictionary<String,AnyObject>
+        newAnswer.location = CLLocationCoordinate2D(latitude: d["lat"]! as! Double, longitude: d["lng"]! as! Double)
+      }
+      if let url = a["url"] {
+        newAnswer.url = url as? String
+      }
+      self.nextAnswers.append(newAnswer)
+    }
+    self.addMessage(value["question"] as! String, showTyping: true)
+    self.lastQuestion = value["id"] as! String
   }
 }
 

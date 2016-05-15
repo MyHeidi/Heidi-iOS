@@ -12,7 +12,7 @@ import CoreLocation
 class Answer {
 
   var id: String!
-  var action: String!
+  var action: String?
   private var _answer: String!
   var answer: String! {
     get {
@@ -26,6 +26,28 @@ class Answer {
         _answer = "📱 Data"
       case "country_info":
         _answer = "ℹ️ Info"
+      case "leisure_restaurants":
+        _answer = "🍽 Restaurant"
+      case "leisure_bars":
+        _answer = "🍺 Bar"
+      case "leisure_clubs":
+        _answer = "🎉 Club"
+      case "airport_roaming_yes":
+        _answer = "✅ Yes"
+      case "airport_roaming_no":
+        _answer = "❌ No"
+      case "leisure_restaurants_cuisine_italian":
+        _answer = "Italian"
+      case "leisure_restaurants_cuisine_indian":
+        _answer = "Indian"
+      case "leisure_restaurants_cuisine_fastfood":
+        _answer = "Fast Food"
+      case "leisure_restaurants_distance_5":
+        _answer = "5 min"
+      case "leisure_restaurants_distance_10":
+        _answer = "10 min"
+      case "leisure_restaurants_distance_30":
+        _answer = "30 min"
       default:
         assert(false, "unknown type: \(newValue)")
         _answer = ""
@@ -33,6 +55,7 @@ class Answer {
     }
   }
   var location: CLLocationCoordinate2D?
+  var url: String?
 
   init() {
 

@@ -22,10 +22,11 @@ class EntryItemView: UIView {
     self.bg.backgroundColor = UIColor(red:0.200,  green:0.651,  blue:0.992, alpha:1)
     self.addSubview(self.bg)
 
-    self.titleLabel.frame = CGRect(x: 16, y: 12, width: self.frame.width - 124, height: 0)
+    self.titleLabel.frame = CGRect(x: 16, y: 12, width: 0, height: 0)
     self.titleLabel.textColor = UIColor.whiteColor()
     self.titleLabel.font = UIFont.systemFontOfSize(14)
     self.titleLabel.text = title
+    self.titleLabel.sizeToFit()
     self.bg.addSubview(self.titleLabel)
   }
 
@@ -41,12 +42,8 @@ class EntryItemView: UIView {
   override func layoutSubviews() {
     super.layoutSubviews()
 
-    let titleSize = self.titleLabel.sizeForWidth(self.frame.width - 124, attributed: false)
-    self.titleLabel.frame.size.width = titleSize.width
-    self.titleLabel.frame.size.height = titleSize.height
-
-    let width = titleSize.width + 16 + 16
-    let height = titleSize.height + 12 * 2
+    let width = self.titleLabel.frame.width + 16 + 16
+    let height = self.titleLabel.frame.height + 12 * 2
     self.bg.frame = CGRect(x: 0, y: 0, width: width, height: height)
 
     self.updateCorners()

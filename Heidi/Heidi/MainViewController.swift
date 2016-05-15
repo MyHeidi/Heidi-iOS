@@ -12,6 +12,7 @@ import LKAlertController
 import UberRides
 import CoreLocation
 import Alamofire
+import SafariServices
 
 class ChatItem: NSObject {
   var writing = false
@@ -22,6 +23,10 @@ class StringChatItem: ChatItem {
   var value = ""
 }
 
+class VenuesChatItem: ChatItem {
+  var venues = [Venue]()
+}
+
 class MainViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, SizeDelegate, EntryViewDelegate {
 
   private var collectionView: UICollectionView!
@@ -30,8 +35,11 @@ class MainViewController: UIViewController, UICollectionViewDataSource, UICollec
   private var items = [ChatItem]()
   private var currentTypingItem: StringChatItem?
   private var currentStep = 0
+  private var demoStep = 1
   private var nextAnswers = [Answer]()
   private var finished = false
+  private var history = [[String:String]]()
+  private var lastQuestion = ""
 
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -46,8 +54,9 @@ class MainViewController: UIViewController, UICollectionViewDataSource, UICollec
 
     self.collectionView = UICollectionView(frame: CGRectMake(0, 0, self.view.frame.width, self.view.frame.height - entryHeight), collectionViewLayout: layout)
     self.collectionView!.registerClass(ChatCell.self, forCellWithReuseIdentifier: "chatCell")
-    self.collectionView.contentInset = UIEdgeInsetsMake(20, 0, 0, 0)
-    self.collectionView.scrollIndicatorInsets = UIEdgeInsetsMake(20, 0, 0, 0)
+    self.collectionView!.registerClass(VenuePickerCell.self, forCellWithReuseIdentifier: "venuePickerCell")
+    self.collectionView.contentInset = UIEdgeInsetsMake(20, 0, 10, 0)
+    self.collectionView.scrollIndicatorInsets = UIEdgeInsetsMake(20, 0, 10, 0)
     self.collectionView.dataSource = self
     self.collectionView.delegate = self
     self.collectionView.alwaysBounceVertical = true
@@ -64,12 +73,12 @@ class MainViewController: UIViewController, UICollectionViewDataSource, UICollec
 
     NSNotificationCenter.defaultCenter().addObserverForName(UIApplicationDidEnterBackgroundNotification, object: nil, queue: NSOperationQueue.mainQueue()) { (notification: NSNotification) in
       if (self.finished) {
-        let ud = NSUserDefaults.standardUserDefaults()
-        ud.setInteger(ud.integerForKey("demoStep") + 1, forKey: "demoStep")
+        self.demoStep += 1
         self.currentStep = 0
         self.entryView.updateOptions([], alternativeEntry: nil)
         self.items.removeAll()
         self.collectionView.reloadData()
+        self.history.removeAll()
 
         self.loadNextQuestion()
       }
@@ -83,16 +92,29 @@ class MainViewController: UIViewController, UICollectionViewDataSource, UICollec
 
   func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
     let item = self.items[indexPath.row]
-    let cell = collectionView.dequeueReusableCellWithReuseIdentifier("chatCell", forIndexPath: indexPath) as! ChatCell
-    cell.item = item as! StringChatItem
-    cell.sizeDelegate = self
-    return cell
+    if (item is StringChatItem) {
+      let cell = collectionView.dequeueReusableCellWithReuseIdentifier("chatCell", forIndexPath: indexPath) as! ChatCell
+      cell.item = item as! StringChatItem
+      cell.sizeDelegate = self
+      return cell
+    } else if (item is VenuesChatItem) {
+      let cell = collectionView.dequeueReusableCellWithReuseIdentifier("venuePickerCell", forIndexPath: indexPath) as! VenuePickerCell
+      cell.item = item as! VenuesChatItem
+      cell.delegate = self
+      return cell
+    }
+    return UICollectionViewCell()
   }
 
   func collectionView(collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAtIndexPath indexPath: NSIndexPath) -> CGSize {
     let item = self.items[indexPath.row]
-    self.sizingCell.item = item as! StringChatItem
-    return self.sizingCell.sizeThatFits(CGSizeMake(self.view.frame.width, 0))
+    if (item is StringChatItem) {
+      self.sizingCell.item = item as! StringChatItem
+      return self.sizingCell.sizeThatFits(CGSizeMake(self.view.frame.width, 0))
+    } else if (item is VenuesChatItem) {
+      return CGSizeMake(self.view.frame.width, 100)
+    }
+    return CGSizeZero
   }
 
   func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath: NSIndexPath) {
@@ -135,8 +157,9 @@ class MainViewController: UIViewController, UICollectionViewDataSource, UICollec
 
   func disableTyping(indexPath: NSIndexPath, completion: AddMessageCompletion?) {
     self.currentTypingItem!.writing = false
-    let cell = self.collectionView.cellForItemAtIndexPath(indexPath) as! ChatCell
-    cell.reloadData()
+    if let cell = self.collectionView.cellForItemAtIndexPath(indexPath) as? ChatCell {
+      cell.reloadData()
+    }
     self.delay(0.2) {
       self.showAnswers()
       completion?()
@@ -179,6 +202,54 @@ class MainViewController: UIViewController, UICollectionViewDataSource, UICollec
       })
     } else if (a.action == "done") {
       self.showEndMessage()
+    } else if (a.action == "question") {
+      self.history.append(["question_id":self.lastQuestion, "answer_id":a.id])
+      self.nextAnswers.removeAll()
+      self.entryView.updateOptions([], alternativeEntry: nil)
+      self.addMessage(value, showTyping: false, ownItem: true) {
+        self.loadNextQuestion()
+      }
+    } else if (a.action == "request") {
+      self.history.append(["question_id":self.lastQuestion, "answer_id":a.id])
+      self.nextAnswers.removeAll()
+      self.entryView.updateOptions([], alternativeEntry: nil)
+      self.addMessage(value, showTyping: false, ownItem: true) {
+        let historyData = try! NSJSONSerialization.dataWithJSONObject(self.history, options: NSJSONWritingOptions.PrettyPrinted)
+        Alamofire.request(.POST, "http://dev.heidi.wx.rs"+a.url!, parameters: ["lat":"51.5225996", "lng":"-0.085515", "prev_answers":NSString(data: historyData, encoding: NSUTF8StringEncoding)!]).responseJSON(completionHandler: { (response: Response<AnyObject, NSError>) in
+          if (response.result.value == nil) {
+            Alert(title: "Error", message: "Didn't get a valid response from the server.").showOkay()
+            return
+          }
+          if let answer = response.result.value!["answer"] as? String {
+            self.addMessage(answer, showTyping: true, ownItem: false) {
+              self.showEndMessage()
+            }
+          }
+          if let places = response.result.value!["places"] as? [[String:AnyObject]] {
+            var venues = [Venue]()
+            for place in places {
+              let venue = Venue()
+              venue.name = place["name"] as! String
+              venue.id = place["id"] as! String
+              if (place["image_url"] as? NSNull != NSNull()) {
+                venue.image_url = place["image_url"] as? String
+              }
+              venue.distance = place["distance"] as! Int
+              venue.location = CLLocationCoordinate2D(latitude: place["lat"]! as! Double, longitude: place["lng"]! as! Double)
+              venues.append(venue)
+            }
+            let item = VenuesChatItem()
+            item.venues = venues
+            self.items.append(item)
+            let indexPath = NSIndexPath(forRow: self.items.count - 1, inSection: 0)
+            self.collectionView.insertItemsAtIndexPaths([indexPath])
+          }
+        })
+      }
+    } else if (a.action == "url") {
+      let vc = SFSafariViewController(URL: NSURL(string: a.url!)!)
+      vc.title = a.answer
+      self.navigationController?.pushViewController(vc, animated: true)
     }
 
 //    self.openUber()
@@ -209,11 +280,12 @@ extension MainViewController {
   override func motionEnded(motion: UIEventSubtype, withEvent event: UIEvent!) {
     if (event.subtype == UIEventSubtype.MotionShake) {
       Alert(title: "Reset?").addAction("Cancel").addAction("Yes", style: .Default, preferredAction: true, handler: { (action: UIAlertAction!) in
-        NSUserDefaults.standardUserDefaults().setInteger(0, forKey: "demoStep")
+        self.demoStep = 0
         self.currentStep = 0
         self.entryView.updateOptions([], alternativeEntry: nil)
         self.items.removeAll()
         self.collectionView.reloadData()
+        self.history.removeAll()
         self.delay(0.1) {
           self.loadNextQuestion()
         }
@@ -258,23 +330,60 @@ extension MainViewController: RideRequestViewControllerDelegate {
 // Data loading
 extension MainViewController {
   private func loadNextQuestion() {
-    Alamofire.request(.POST, "http://dev.heidi.wx.rs/get_question", parameters: ["lat":"51.153662", "lng":"-0.182063", "prev_answers":"[]"]).responseJSON { (response: Response<AnyObject, NSError>) in
+    var lat = ""
+    var lng = ""
+
+    if (self.demoStep == 0) {
+      lat = "51.153662"
+      lng = "-0.182063"
+    } else if (self.demoStep == 1) {
+      lat = "51.5226651"
+      lng = "-0.0878222"
+    }
+
+//    lat = "51.153662"
+//    lng = "-0.182063"
+
+    let historyData = try! NSJSONSerialization.dataWithJSONObject(self.history, options: NSJSONWritingOptions.PrettyPrinted)
+    Alamofire.request(.POST, "http://dev.heidi.wx.rs/get_question", parameters: ["lat":lat, "lng":lng, "prev_answers":NSString(data: historyData, encoding: NSUTF8StringEncoding)!]).responseJSON { (response: Response<AnyObject, NSError>) in
+      if (response.result.value == nil) {
+        Alert(title: "Error", message: "Didn't get a valid response from the server.").showOkay()
+        return
+      }
       print(response.result.value!)
       let answers = response.result.value!["answers"] as! Array<Dictionary<String, AnyObject>>
       self.nextAnswers.removeAll()
       for a in answers {
         let newAnswer = Answer()
         newAnswer.id = a["id"] as! String
-        newAnswer.action = a["action"] as! String
+        if a["action"] as? NSNull != NSNull() {
+          newAnswer.action = a["action"] as? String
+        }
         newAnswer.answer = a["answer"] as! String
         if let loc = a["location"] {
           let d = loc as! Dictionary<String,AnyObject>
           newAnswer.location = CLLocationCoordinate2D(latitude: d["lat"]! as! Double, longitude: d["lng"]! as! Double)
         }
+        if let url = a["url"] {
+          newAnswer.url = url as? String
+        }
         self.nextAnswers.append(newAnswer)
       }
       self.addMessage(response.result.value!["question"] as! String, showTyping: true)
+      self.lastQuestion = response.result.value!["id"] as! String
     }
+  }
+}
+
+
+// Venue selection
+extension MainViewController: VenuePickerCellDelegate {
+  func selectedVenue(venue: Venue) {
+    self.nextAnswers = [Answer(answer: "🚗 Uber", "uber"), Answer(answer: "🗺 Navigate", "nav"), Answer(answer: "🚎 Bus", "bus")]
+    for l in self.nextAnswers {
+      l.location = venue.location
+    }
+    self.addMessage("How do you want to get there?", showTyping: true)
   }
 }
 

@@ -50,7 +50,7 @@ class EntryView: UIView {
     self.itemViews.removeAll()
 
     for (index, title) in options.enumerate() {
-      let item = EntryItemView(frame: CGRectMake(0, 0, 200, 0), title: title)
+      let item = EntryItemView(frame: CGRectMake(0, 0, 0, 0), title: title)
       item.layoutSubviews()
       item.alpha = 0.0
       item.tag = index

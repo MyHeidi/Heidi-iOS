@@ -30,7 +30,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     self.window?.makeKeyAndVisible()
 
     let vc = MainViewController()
-    let nv = UINavigationController(rootViewController: vc)
+    let nv = DefaultNavigationController(rootViewController: vc)
     self.window?.rootViewController = nv
 
 
@@ -57,20 +57,25 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     let taskId = UIApplication.sharedApplication().beginBackgroundTaskWithExpirationHandler({
     })
 
-    Alamofire.request(.POST, "http://dev.heidi.wx.rs/update_location", parameters: ["lat":"51.153662", "lng":"-0.182063"]).responseJSON { (response: Response<AnyObject, NSError>) in
-      if let action = response.result.value!["action"] {
-        if (action! as! String == "notification") {
-          let notification = UILocalNotification()
-          notification.fireDate = NSDate(timeIntervalSinceNow: 1)
-          notification.alertBody = response.result.value!["message"]! as? String
-          notification.timeZone = NSTimeZone.defaultTimeZone()
-          notification.soundName = UILocalNotificationDefaultSoundName
-          application.scheduleLocalNotification(notification)
+    let k = userInfo["notification"]! as! String
+    if (k == "arrival") {
+      Alamofire.request(.POST, "http://dev.heidi.wx.rs/update_location", parameters: ["lat":"51.153662", "lng":"-0.182063"]).responseJSON { (response: Response<AnyObject, NSError>) in
+        if let action = response.result.value!["action"] {
+          if (action! as! String == "notification") {
+            let notification = UILocalNotification()
+            notification.fireDate = NSDate(timeIntervalSinceNow: 1)
+            notification.alertBody = response.result.value!["message"]! as? String
+            notification.timeZone = NSTimeZone.defaultTimeZone()
+            notification.soundName = UILocalNotificationDefaultSoundName
+            application.scheduleLocalNotification(notification)
+          }
         }
-      }
 
-      UIApplication.sharedApplication().endBackgroundTask(taskId)
-      completionHandler(.NewData)
+        UIApplication.sharedApplication().endBackgroundTask(taskId)
+        completionHandler(.NewData)
+      }
+    } else if (k == "photo") {
+      
     }
   }
 }

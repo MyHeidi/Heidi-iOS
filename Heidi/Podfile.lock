@@ -1,15 +1,19 @@
 PODS:
   - Alamofire (3.4.0)
+  - ImageLoader (0.9.0)
   - Keys (1.0.0)
   - LKAlertController (1.9.1)
   - ObjectMapper (1.1.5)
+  - paper-onboarding (0.1.0)
   - UberRides (0.4.2):
     - ObjectMapper (~> 1.1.0)
 
 DEPENDENCIES:
   - Alamofire (~> 3.4)
+  - ImageLoader
   - Keys (from `Pods/CocoaPodsKeys`)
   - LKAlertController (~> 1.6)
+  - paper-onboarding
   - UberRides
 
 EXTERNAL SOURCES:
@@ -18,9 +22,11 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   Alamofire: c19a627cefd6a95f840401c49ab1f124e07f54ee
+  ImageLoader: bb709e5b2708158da405760f42c75e7e52b561b5
   Keys: 7d2ff6ff42f6903358267ce56e9392f83c31acfe
   LKAlertController: 1e85a645e0bd3223a8f79abb9b7b54fe10036f6f
   ObjectMapper: 528b1a6677a6acac7747edd508576983e76a9148
+  paper-onboarding: 1d5df877ef2215fc92f3d4139e416dc21b2e4d48
   UberRides: fa21246486f1c20b88392036501481f86e81a022
 
 COCOAPODS: 0.39.0

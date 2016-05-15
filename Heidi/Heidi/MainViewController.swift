@@ -233,7 +233,12 @@ class MainViewController: UIViewController, UICollectionViewDataSource, UICollec
       self.entryView.updateOptions([], alternativeEntry: nil)
       self.addMessage(value, showTyping: false, ownItem: true) {
         let historyData = try! NSJSONSerialization.dataWithJSONObject(self.history, options: NSJSONWritingOptions.PrettyPrinted)
-        Alamofire.request(.POST, "http://dev.heidi.wx.rs"+a.url!, parameters: ["lat":"51.5225996", "lng":"-0.085515", "prev_answers":NSString(data: historyData, encoding: NSUTF8StringEncoding)!]).responseJSON(completionHandler: { (response: Response<AnyObject, NSError>) in
+        var parms = ["lat":"51.5225996", "lng":"-0.085515", "prev_answers":NSString(data: historyData, encoding: NSUTF8StringEncoding)!]
+        if (a.url! == "/action/twitter") {
+          parms["status"] = "Having a good time at AngelHack London! #AH9 #AngelHackLondon"
+          parms["photo"] = "test.png"
+        }
+        Alamofire.request(.POST, "http://dev.heidi.wx.rs"+a.url!, parameters: parms).responseJSON(completionHandler: { (response: Response<AnyObject, NSError>) in
           if (response.result.value == nil) {
             Alert(title: "Error", message: "Didn't get a valid response from the server.").showOkay()
             return
@@ -268,6 +273,10 @@ class MainViewController: UIViewController, UICollectionViewDataSource, UICollec
       let vc = SFSafariViewController(URL: NSURL(string: a.url!)!)
       vc.title = a.answer
       self.navigationController?.pushViewController(vc, animated: true)
+    } else if (a.action == nil) {
+      self.addMessage(value, showTyping: false, ownItem: true) {
+        self.showEndMessage()
+      }
     }
 
 //    self.openUber()
@@ -389,7 +398,8 @@ extension MainViewController {
     let requestOptions = PHImageRequestOptions()
     requestOptions.synchronous = true
     let fetchOptions = PHFetchOptions()
-    fetchOptions.sortDescriptors = [NSSortDescriptor(key:"creationDate", ascending: true)]
+    fetchOptions.fetchLimit = 1
+    fetchOptions.sortDescriptors = [NSSortDescriptor(key:"creationDate", ascending: false)]
 
     if let fetchResult: PHFetchResult = PHAsset.fetchAssetsWithMediaType(PHAssetMediaType.Image, options: fetchOptions) {
       if fetchResult.count > 0 {

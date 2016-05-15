@@ -37,17 +37,17 @@ class Answer {
       case "airport_roaming_no":
         _answer = "❌ No"
       case "leisure_restaurants_cuisine_italian":
-        _answer = "Italian"
+        _answer = "🍝 Italian"
       case "leisure_restaurants_cuisine_indian":
-        _answer = "Indian"
+        _answer = "🍛 Indian"
       case "leisure_restaurants_cuisine_fastfood":
-        _answer = "Fast Food"
+        _answer = "🍟 Fast Food"
       case "leisure_restaurants_distance_5":
-        _answer = "5 min"
+        _answer = "🕐 5 min"
       case "leisure_restaurants_distance_10":
-        _answer = "10 min"
+        _answer = "🕑 10 min"
       case "leisure_restaurants_distance_30":
-        _answer = "30 min"
+        _answer = "🕧 30 min"
       case "photo_share_photo_yes":
         _answer = "👍 Share photo"
       case "photo_share_photo_no":

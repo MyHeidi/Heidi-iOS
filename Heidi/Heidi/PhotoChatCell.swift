@@ -30,6 +30,7 @@ class PhotoChatCell: UICollectionViewCell {
     self.bg.addSubview(self.iv)
     self.iv.contentMode = .ScaleAspectFill
     self.iv.clipsToBounds = true
+    self.iv.layer.cornerRadius = 6
   }
   
   required init?(coder aDecoder: NSCoder) {

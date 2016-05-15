@@ -7,10 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		03294B121CE7E7680058A93B /* Alamofire.framework in Copy Files */ = {isa = PBXBuildFile; fileRef = 03294B0E1CE7E7680058A93B /* Alamofire.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		03294B131CE7E7680058A93B /* LKAlertController.framework in Copy Files */ = {isa = PBXBuildFile; fileRef = 03294B0F1CE7E7680058A93B /* LKAlertController.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		03294B141CE7E7680058A93B /* ObjectMapper.framework in Copy Files */ = {isa = PBXBuildFile; fileRef = 03294B101CE7E7680058A93B /* ObjectMapper.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		03294B151CE7E7680058A93B /* UberRides.framework in Copy Files */ = {isa = PBXBuildFile; fileRef = 03294B111CE7E7680058A93B /* UberRides.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		03294B2F1CE7ED3A0058A93B /* VenuePickerCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03294B2E1CE7ED3A0058A93B /* VenuePickerCell.swift */; };
 		03294B311CE7EE190058A93B /* Venue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03294B301CE7EE190058A93B /* Venue.swift */; };
 		03294B331CE7F0020058A93B /* DefaultNavigationBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03294B321CE7F0020058A93B /* DefaultNavigationBar.swift */; };
@@ -25,6 +21,12 @@
 		03294B471CE8484C0058A93B /* Nunito-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 03294B3F1CE8484C0058A93B /* Nunito-Regular.ttf */; };
 		03294B481CE8484C0058A93B /* Nunito-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 03294B401CE8484C0058A93B /* Nunito-SemiBold.ttf */; };
 		03294B4A1CE856980058A93B /* PhotoChatCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03294B491CE856980058A93B /* PhotoChatCell.swift */; };
+		03294B4D1CE8635D0058A93B /* Alamofire.framework in Copy Files */ = {isa = PBXBuildFile; fileRef = 03294B4C1CE8635D0058A93B /* Alamofire.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		03294B4F1CE863610058A93B /* ImageLoader.framework in Copy Files */ = {isa = PBXBuildFile; fileRef = 03294B4E1CE863610058A93B /* ImageLoader.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		03294B531CE863690058A93B /* LKAlertController.framework in Copy Files */ = {isa = PBXBuildFile; fileRef = 03294B501CE863690058A93B /* LKAlertController.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		03294B541CE863690058A93B /* ObjectMapper.framework in Copy Files */ = {isa = PBXBuildFile; fileRef = 03294B511CE863690058A93B /* ObjectMapper.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		03294B551CE863690058A93B /* paper_onboarding.framework in Copy Files */ = {isa = PBXBuildFile; fileRef = 03294B521CE863690058A93B /* paper_onboarding.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		03294B571CE863890058A93B /* UberRides.framework in Copy Files */ = {isa = PBXBuildFile; fileRef = 03294B561CE863890058A93B /* UberRides.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		036F64061CE75CCA003F2B94 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 036F64051CE75CCA003F2B94 /* AppDelegate.swift */; };
 		036F640D1CE75CCA003F2B94 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 036F640C1CE75CCA003F2B94 /* Assets.xcassets */; };
 		036F64101CE75CCA003F2B94 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 036F640E1CE75CCA003F2B94 /* LaunchScreen.storyboard */; };
@@ -51,10 +53,12 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				03294B121CE7E7680058A93B /* Alamofire.framework in Copy Files */,
-				03294B131CE7E7680058A93B /* LKAlertController.framework in Copy Files */,
-				03294B141CE7E7680058A93B /* ObjectMapper.framework in Copy Files */,
-				03294B151CE7E7680058A93B /* UberRides.framework in Copy Files */,
+				03294B571CE863890058A93B /* UberRides.framework in Copy Files */,
+				03294B4D1CE8635D0058A93B /* Alamofire.framework in Copy Files */,
+				03294B4F1CE863610058A93B /* ImageLoader.framework in Copy Files */,
+				03294B531CE863690058A93B /* LKAlertController.framework in Copy Files */,
+				03294B541CE863690058A93B /* ObjectMapper.framework in Copy Files */,
+				03294B551CE863690058A93B /* paper_onboarding.framework in Copy Files */,
 			);
 			name = "Copy Files";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -63,10 +67,6 @@
 
 /* Begin PBXFileReference section */
 		001FC1C4FB4C86325999CC8F /* Pods-Heidi.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Heidi.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Heidi/Pods-Heidi.debug.xcconfig"; sourceTree = "<group>"; };
-		03294B0E1CE7E7680058A93B /* Alamofire.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; name = Alamofire.framework; path = "/Users/dmarriott/Library/Developer/Xcode/DerivedData/Heidi-funsqbgdbhktdpfpsbmgtfmkmimv/Build/Products/Release-iphoneos/Alamofire.framework"; sourceTree = "<absolute>"; };
-		03294B0F1CE7E7680058A93B /* LKAlertController.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; name = LKAlertController.framework; path = "/Users/dmarriott/Library/Developer/Xcode/DerivedData/Heidi-funsqbgdbhktdpfpsbmgtfmkmimv/Build/Products/Release-iphoneos/LKAlertController.framework"; sourceTree = "<absolute>"; };
-		03294B101CE7E7680058A93B /* ObjectMapper.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; name = ObjectMapper.framework; path = "/Users/dmarriott/Library/Developer/Xcode/DerivedData/Heidi-funsqbgdbhktdpfpsbmgtfmkmimv/Build/Products/Release-iphoneos/ObjectMapper.framework"; sourceTree = "<absolute>"; };
-		03294B111CE7E7680058A93B /* UberRides.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; name = UberRides.framework; path = "/Users/dmarriott/Library/Developer/Xcode/DerivedData/Heidi-funsqbgdbhktdpfpsbmgtfmkmimv/Build/Products/Release-iphoneos/UberRides.framework"; sourceTree = "<absolute>"; };
 		03294B2E1CE7ED3A0058A93B /* VenuePickerCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VenuePickerCell.swift; sourceTree = "<group>"; };
 		03294B301CE7EE190058A93B /* Venue.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Venue.swift; sourceTree = "<group>"; };
 		03294B321CE7F0020058A93B /* DefaultNavigationBar.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DefaultNavigationBar.swift; sourceTree = "<group>"; };
@@ -81,6 +81,12 @@
 		03294B3F1CE8484C0058A93B /* Nunito-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Nunito-Regular.ttf"; sourceTree = "<group>"; };
 		03294B401CE8484C0058A93B /* Nunito-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Nunito-SemiBold.ttf"; sourceTree = "<group>"; };
 		03294B491CE856980058A93B /* PhotoChatCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PhotoChatCell.swift; sourceTree = "<group>"; };
+		03294B4C1CE8635D0058A93B /* Alamofire.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; name = Alamofire.framework; path = "/Users/dmarriott/Library/Developer/Xcode/DerivedData/Heidi-funsqbgdbhktdpfpsbmgtfmkmimv/Build/Products/Debug-iphoneos/Alamofire.framework"; sourceTree = "<absolute>"; };
+		03294B4E1CE863610058A93B /* ImageLoader.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; name = ImageLoader.framework; path = "/Users/dmarriott/Library/Developer/Xcode/DerivedData/Heidi-funsqbgdbhktdpfpsbmgtfmkmimv/Build/Products/Debug-iphoneos/ImageLoader.framework"; sourceTree = "<absolute>"; };
+		03294B501CE863690058A93B /* LKAlertController.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; name = LKAlertController.framework; path = "/Users/dmarriott/Library/Developer/Xcode/DerivedData/Heidi-funsqbgdbhktdpfpsbmgtfmkmimv/Build/Products/Debug-iphoneos/LKAlertController.framework"; sourceTree = "<absolute>"; };
+		03294B511CE863690058A93B /* ObjectMapper.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; name = ObjectMapper.framework; path = "/Users/dmarriott/Library/Developer/Xcode/DerivedData/Heidi-funsqbgdbhktdpfpsbmgtfmkmimv/Build/Products/Debug-iphoneos/ObjectMapper.framework"; sourceTree = "<absolute>"; };
+		03294B521CE863690058A93B /* paper_onboarding.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; name = paper_onboarding.framework; path = "/Users/dmarriott/Library/Developer/Xcode/DerivedData/Heidi-funsqbgdbhktdpfpsbmgtfmkmimv/Build/Products/Debug-iphoneos/paper_onboarding.framework"; sourceTree = "<absolute>"; };
+		03294B561CE863890058A93B /* UberRides.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; name = UberRides.framework; path = "/Users/dmarriott/Library/Developer/Xcode/DerivedData/Heidi-funsqbgdbhktdpfpsbmgtfmkmimv/Build/Products/Debug-iphoneos/UberRides.framework"; sourceTree = "<absolute>"; };
 		036F64021CE75CCA003F2B94 /* Heidi.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Heidi.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		036F64051CE75CCA003F2B94 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		036F640C1CE75CCA003F2B94 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -136,6 +142,7 @@
 		036F63F91CE75CCA003F2B94 = {
 			isa = PBXGroup;
 			children = (
+				03294B561CE863890058A93B /* UberRides.framework */,
 				036F64041CE75CCA003F2B94 /* Heidi */,
 				036F64031CE75CCA003F2B94 /* Products */,
 				B6CA79B3A82C6B776C893322 /* Pods */,
@@ -199,10 +206,11 @@
 		F9F470E1E9DBF30C58590647 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				03294B0E1CE7E7680058A93B /* Alamofire.framework */,
-				03294B0F1CE7E7680058A93B /* LKAlertController.framework */,
-				03294B101CE7E7680058A93B /* ObjectMapper.framework */,
-				03294B111CE7E7680058A93B /* UberRides.framework */,
+				03294B501CE863690058A93B /* LKAlertController.framework */,
+				03294B511CE863690058A93B /* ObjectMapper.framework */,
+				03294B521CE863690058A93B /* paper_onboarding.framework */,
+				03294B4E1CE863610058A93B /* ImageLoader.framework */,
+				03294B4C1CE8635D0058A93B /* Alamofire.framework */,
 				03D82F721CE7DC74003C0D86 /* UberRides.framework */,
 				614619ABDB8A17FF125E93BF /* Pods_Heidi.framework */,
 				E9869A52A5EDFF5246AD3BDA /* Pods.framework */,

@@ -46,6 +46,7 @@ class MainViewController: UIViewController, UICollectionViewDataSource, UICollec
   private var finished = true
   private var history = [[String:String]]()
   private var lastQuestion = ""
+  private var photoId = ""
 
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -246,7 +247,7 @@ class MainViewController: UIViewController, UICollectionViewDataSource, UICollec
         var parms = ["lat":"51.5225996", "lng":"-0.085515", "prev_answers":NSString(data: historyData, encoding: NSUTF8StringEncoding)!]
         if (a.url! == "/action/twitter") {
           parms["status"] = "Having a good time at AngelHack London! #AH9 #AngelHackLondon"
-          parms["photo"] = "test.png"
+          parms["photo"] = self.photoId
         }
         Alamofire.request(.POST, "http://dev.heidi.wx.rs"+a.url!, parameters: parms).responseJSON(completionHandler: { (response: Response<AnyObject, NSError>) in
           if (response.result.value == nil) {
@@ -423,11 +424,12 @@ extension MainViewController {
       self.collectionView.insertItemsAtIndexPaths([indexPath])
     }
 
+    self.photoId = NSUUID().UUIDString + ".png"
     Alamofire.upload(.POST, "http://dev.heidi.wx.rs/upload/photo", multipartFormData: {
       multipartFormData in
       if let _image = photo {
         if let imageData = UIImagePNGRepresentation(_image) {
-          multipartFormData.appendBodyPart(data: imageData, name: "photo", fileName: NSUUID().UUIDString + ".png", mimeType: "image/png")
+          multipartFormData.appendBodyPart(data: imageData, name: "photo", fileName: self.photoId, mimeType: "image/png")
         }
       }
       for (key, value) in userInfo {
